@@ -104,6 +104,12 @@ app.get("/api/download", (req, res) => {
   const child = runYtdlp([
     "--no-playlist",
     "--no-warnings",
+    "--retries",
+    "10",
+    "--fragment-retries",
+    "10",
+    "--extractor-retries",
+    "3",
     "-f",
     FORMAT,
     "-o",
@@ -113,10 +119,24 @@ app.get("/api/download", (req, res) => {
 
   let stderr = "";
   let headersSent = false;
+  let done = false; // guards against double-responding / use-after-free
+
+  const kill = () => {
+    if (!child.killed) {
+      try { child.kill("SIGKILL"); } catch { /* already gone */ }
+    }
+  };
 
   child.stderr.on("data", (d) => (stderr += d));
 
+  // If the client disconnects mid-stream, writing to the socket throws EPIPE.
+  // Swallow it here so it can never bubble up to an uncaughtException that would
+  // crash the whole server (which on Render shows up as intermittent 404s).
+  res.on("error", () => { done = true; kill(); });
+  child.stdout.on("error", () => { done = true; kill(); });
+
   child.stdout.once("data", (chunk) => {
+    if (done) return;
     // Only set download headers once we know bytes are actually flowing.
     headersSent = true;
     res.setHeader("Content-Type", "video/mp4");
@@ -129,20 +149,24 @@ app.get("/api/download", (req, res) => {
   });
 
   child.on("error", () => {
-    if (!headersSent) res.status(500).send("Could not start the downloader.");
-  });
-
-  child.on("close", (code) => {
-    if (!headersSent) {
-      res
-        .status(422)
-        .send(cleanError(stderr) || "Could not download that video.");
-    } else if (code !== 0) {
-      res.end(); // partial stream; end it so the client isn't left hanging
+    if (done) return;
+    done = true;
+    if (!headersSent && !res.headersSent) {
+      res.status(500).send("Could not start the downloader.");
     }
   });
 
-  req.on("close", () => child.kill("SIGKILL")); // client bailed — stop working
+  child.on("close", () => {
+    if (done) return;
+    done = true;
+    if (!headersSent && !res.headersSent) {
+      res.status(422).send(cleanError(stderr) || "Could not download that video.");
+    } else {
+      res.end(); // finished (or partial) stream — close it cleanly
+    }
+  });
+
+  req.on("close", () => { done = true; kill(); }); // client bailed — stop working
 });
 
 // yt-dlp errors are noisy; surface a single readable line.
@@ -156,6 +180,15 @@ function cleanError(raw) {
     .find((l) => l.toLowerCase().includes("error"));
   return line ? line.replace(/^ERROR:\s*/i, "") : "";
 }
+
+// Last line of defense: a stray error (e.g. a socket reset during streaming)
+// must never crash the process and take the whole site down. Log and continue.
+process.on("uncaughtException", (err) => {
+  console.error("uncaughtException:", err?.message || err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("unhandledRejection:", reason);
+});
 
 app.listen(PORT, () => {
   console.log(`X Video Downloader running at http://localhost:${PORT}`);
