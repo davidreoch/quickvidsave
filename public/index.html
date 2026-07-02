@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>X Video Downloader — Save Videos from X (Twitter) in MP4</title>
+    <meta
+      name="description"
+      content="Free X (Twitter) video downloader. Paste a post link and save the video as MP4 in one click — no signup, no watermark, works on mobile and desktop."
+    />
+    <!-- Replace https://YOURDOMAIN.com with your real domain everywhere below. -->
+    <link rel="canonical" href="https://YOURDOMAIN.com/" />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="X Video Downloader — Save Videos from X (Twitter)" />
+    <meta property="og:description" content="Paste a post link and save the video as MP4 in one click. Free, fast, no signup." />
+    <meta property="og:url" content="https://YOURDOMAIN.com/" />
+    <meta property="og:image" content="https://YOURDOMAIN.com/og-image.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="X Video Downloader" />
+    <meta name="twitter:description" content="Save videos from X (Twitter) as MP4 in one click. Free, no signup." />
+    <meta name="twitter:image" content="https://YOURDOMAIN.com/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "name": "X Video Downloader",
+            "url": "https://YOURDOMAIN.com/",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Any",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "How do I download a video from X (Twitter)?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Open the post on X, tap Share then Copy link, paste the link into the box on this page, and press Download to save the MP4." }
+              },
+              {
+                "@type": "Question",
+                "name": "Is the X video downloader free?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is completely free, requires no account, and adds no watermark." }
+              },
+              {
+                "@type": "Question",
+                "name": "Does it work on iPhone and Android?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes. It runs in any mobile or desktop browser — no app to install." }
+              },
+              {
+                "@type": "Question",
+                "name": "Where do downloaded videos get saved?",
+                "acceptedAnswer": { "@type": "Answer", "text": "On a computer they go to your Downloads folder. On Android they save to Downloads. On iPhone, tap the share icon after downloading to save the file to Files or your Photos library." }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I download private or protected X videos?",
+                "acceptedAnswer": { "@type": "Answer", "text": "No. This tool only works with public posts, and you should only download videos you own or have permission to use." }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="nav-inner">
+        <a class="brand" href="/">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          X Video Downloader
+        </a>
+        <div class="nav-links">
+          <a href="/download-twitter-video-iphone">iPhone</a>
+          <a href="/download-twitter-video-android">Android</a>
+          <a href="/twitter-gif-downloader">GIF</a>
+          <a href="/twitter-video-downloader-pc">PC</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="wrap">
+      <header>
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </div>
+        <h1>X Video Downloader</h1>
+        <p>Paste a post link, get the video. Free &amp; no signup.</p>
+      </header>
+
+      <div class="ad-slot">Ad</div>
+
+      <div class="card">
+        <form id="form">
+          <input id="url" type="url" placeholder="https://x.com/user/status/123..." autocomplete="off" required />
+          <button id="submit" type="submit">Download</button>
+        </form>
+
+        <div id="status" class="status muted"></div>
+
+        <div id="preview" class="preview">
+          <img id="thumb" alt="" />
+          <div class="meta">
+            <h3 id="title"></h3>
+            <span id="uploader"></span>
+            <div>
+              <a id="dl" class="dl" href="#"><button type="button">⬇ Save video (MP4)</button></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="steps">
+          <strong>How it works</strong>
+          <ol>
+            <li>Open a post on X that has a video.</li>
+            <li>Tap <em>Share → Copy link</em> and paste it above.</li>
+            <li>Press Download and save the MP4.</li>
+          </ol>
+        </div>
+      </div>
+
+      <section class="faq" aria-label="Frequently asked questions">
+        <h2>Frequently asked questions</h2>
+        <details>
+          <summary>How do I download a video from X (Twitter)?</summary>
+          <p>Open the post on X, tap <em>Share → Copy link</em>, paste the link into the box above, and press Download. Your video saves as an MP4.</p>
+        </details>
+        <details>
+          <summary>Is it free?</summary>
+          <p>Yes — completely free, no account required, and no watermark added to your video.</p>
+        </details>
+        <details>
+          <summary>Does it work on iPhone and Android?</summary>
+          <p>Yes. It runs in any mobile or desktop browser, so there's no app to install. We have step-by-step guides for <a href="/download-twitter-video-iphone">iPhone</a> and <a href="/download-twitter-video-android">Android</a>.</p>
+        </details>
+        <details>
+          <summary>Where do the downloaded videos go?</summary>
+          <p>On a computer, to your Downloads folder. On Android, to Downloads. On iPhone, tap the share icon after downloading to save the file into Files or Photos.</p>
+        </details>
+        <details>
+          <summary>What quality will the video be?</summary>
+          <p>You get the highest-quality single-file MP4 that the original post provides — usually the same resolution the uploader posted.</p>
+        </details>
+        <details>
+          <summary>Can I download private or age-restricted videos?</summary>
+          <p>No. The tool only works with public posts, and you should only download videos you own or have permission to use.</p>
+        </details>
+      </section>
+
+      <section class="related">
+        <h2>More guides</h2>
+        <div class="related-grid">
+          <a href="/download-twitter-video-iphone"><strong>Download on iPhone</strong><span>Save X videos to your camera roll in Safari.</span></a>
+          <a href="/download-twitter-video-android"><strong>Download on Android</strong><span>Save X videos straight to your Downloads.</span></a>
+          <a href="/twitter-gif-downloader"><strong>Twitter GIF downloader</strong><span>Grab X "GIFs" as MP4 (and convert if needed).</span></a>
+          <a href="/twitter-video-downloader-pc"><strong>Download on PC</strong><span>Save X videos on Windows or Mac.</span></a>
+        </div>
+      </section>
+
+      <div class="ad-slot">Ad</div>
+    </div>
+
+    <footer>
+      <div class="foot-links">
+        <a href="/">Home</a>
+        <a href="/download-twitter-video-iphone">iPhone</a>
+        <a href="/download-twitter-video-android">Android</a>
+        <a href="/twitter-gif-downloader">GIF</a>
+        <a href="/twitter-video-downloader-pc">PC</a>
+      </div>
+      <div>X Video Downloader</div>
+      <div class="disclaimer">
+        Only download videos you own or have permission to use. This tool is for
+        personal, fair-use, and archival purposes. X and the X logo are
+        trademarks of their respective owner; this site is not affiliated with X.
+      </div>
+    </footer>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

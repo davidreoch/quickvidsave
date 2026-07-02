@@ -1,0 +1,9 @@
+# ads.txt — authorizes ad networks to sell your inventory. REQUIRED by most networks.
+# Served at https://YOURDOMAIN.com/ads.txt once deployed.
+#
+# Replace the line below with the exact line your ad network gives you after approval.
+# Google AdSense format (swap in YOUR real publisher ID, pub-XXXXXXXXXXXXXXXX):
+#
+# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+#
+# Ezoic / Media.net will each give you their own line(s) to paste here.

@@ -1,0 +1,9 @@
+node_modules/
+npm-debug.log*
+*.log
+.env
+.DS_Store
+
+# Platform-specific yt-dlp binary — the Dockerfile fetches the Linux build at
+# deploy time, and you re-download the mac build locally per the README.
+bin/yt-dlp
