@@ -35,5 +35,20 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://quickvidsave.com/twitter-to-mp4</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://quickvidsave.com/how-to-download-twitter-videos</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://quickvidsave.com/twitter-video-downloader-online</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <!-- Add a <url> block here for each new landing page / guide you publish. -->
 </urlset>
