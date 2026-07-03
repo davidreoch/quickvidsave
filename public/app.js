@@ -1,5 +1,12 @@
 // Shared downloader widget logic. Safe to load on any page — it only runs
 // if the widget markup is present.
+//
+// One-click flow: the form submit triggers the download directly (a single
+// server-side extraction, no separate "look up" step and no second button).
+// The browser saves the file via Content-Disposition — which is also the most
+// reliable way to actually save on iOS Safari. We show honest progress and,
+// the moment bytes start flowing, a clean "download started" confirmation
+// (the server sets a short-lived cookie we poll for).
 (function () {
   const form = document.getElementById("form");
   if (!form) return;
@@ -7,54 +14,70 @@
   const urlInput = document.getElementById("url");
   const submit = document.getElementById("submit");
   const status = document.getElementById("status");
-  const preview = document.getElementById("preview");
-  const thumb = document.getElementById("thumb");
-  const titleEl = document.getElementById("title");
-  const uploaderEl = document.getElementById("uploader");
-  const dl = document.getElementById("dl");
 
   function setStatus(msg, kind) {
     status.className = "status " + (kind || "muted");
     status.innerHTML = msg;
   }
 
-  form.addEventListener("submit", async (e) => {
+  let pollTimer = null;
+  let waitTimer = null;
+  function stopTimers() {
+    if (pollTimer) clearInterval(pollTimer);
+    if (waitTimer) clearTimeout(waitTimer);
+    pollTimer = waitTimer = null;
+  }
+
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     const url = urlInput.value.trim();
     if (!url) return;
+    stopTimers();
 
-    preview.classList.remove("show");
+    // Unique token so we can recognise *our* download starting.
+    const token = "t" + Date.now() + Math.floor(Math.random() * 1e6);
+    document.cookie = "dlstart=; Path=/; Max-Age=0"; // clear any stale value
+
+    // Kick off the download inside this user gesture. No `download` attribute:
+    // that lets the server decide (attachment → saves & we stay here; an error
+    // response → the browser shows our friendly error page instead).
+    const a = document.createElement("a");
+    a.href = "/api/download?t=" + token + "&url=" + encodeURIComponent(url);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
     submit.disabled = true;
-    setStatus('<span class="spinner"></span>Looking up video…', "muted");
+    setStatus(
+      '<span class="spinner"></span>Fetching your video from X… this usually takes 10–20 seconds.',
+      "muted"
+    );
 
-    try {
-      const r = await fetch("/api/info", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || "Something went wrong.");
+    // Keep it from feeling broken on slower/HD videos.
+    waitTimer = setTimeout(() => {
+      setStatus(
+        '<span class="spinner"></span>Still working — longer or HD videos take a little more time.',
+        "muted"
+      );
+    }, 18000);
 
-      titleEl.textContent = data.title || "Video";
-      uploaderEl.textContent = data.uploader ? "by " + data.uploader : "";
-      if (data.thumbnail) {
-        thumb.src = data.thumbnail;
-        thumb.style.display = "";
-      } else {
-        thumb.style.display = "none";
+    // Watch for the "download started" signal from the server.
+    let waited = 0;
+    pollTimer = setInterval(() => {
+      waited += 500;
+      if (document.cookie.indexOf("dlstart=" + token) !== -1) {
+        stopTimers();
+        submit.disabled = false;
+        setStatus("✓ Your download has started — check your downloads.", "muted");
+        document.cookie = "dlstart=; Path=/; Max-Age=0";
+      } else if (waited > 90000) {
+        stopTimers();
+        submit.disabled = false;
+        setStatus(
+          "Taking longer than expected. If nothing downloaded, the link may not contain a video — try another.",
+          "muted"
+        );
       }
-      dl.href = "/api/download?url=" + encodeURIComponent(url);
-      preview.classList.add("show");
-      setStatus("Ready — click Save video below.", "muted");
-    } catch (err) {
-      setStatus(err.message, "error");
-    } finally {
-      submit.disabled = false;
-    }
-  });
-
-  dl.addEventListener("click", () => {
-    setStatus("Your download should begin shortly…", "muted");
+    }, 500);
   });
 })();

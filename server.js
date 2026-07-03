@@ -97,9 +97,15 @@ app.post("/api/info", async (req, res) => {
 });
 
 // Streams the video straight to the client — no temp files, no disk cleanup.
+// One-click flow: the widget links straight here, so there's a single yt-dlp
+// extraction (not an info call + a download call) and no second button.
 app.get("/api/download", (req, res) => {
   const { url, error } = parseAllowedUrl(req.query.url || "");
-  if (error) return res.status(400).send(error);
+  if (error) return sendErrorPage(res, 400, error);
+
+  // Optional token the widget passes so it can detect when the download starts
+  // (we echo it back as a readable cookie the moment bytes begin flowing).
+  const token = String(req.query.t || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 40);
 
   const child = runYtdlp([
     "--no-playlist",
@@ -139,6 +145,12 @@ app.get("/api/download", (req, res) => {
     if (done) return;
     // Only set download headers once we know bytes are actually flowing.
     headersSent = true;
+    // Signal "download started" back to the widget so it can show a clean
+    // confirmation instead of an endless spinner. Not HttpOnly on purpose —
+    // the page's JS needs to read it. Short-lived and carries no data.
+    if (token) {
+      res.setHeader("Set-Cookie", `dlstart=${token}; Path=/; Max-Age=30; SameSite=Lax`);
+    }
     res.setHeader("Content-Type", "video/mp4");
     res.setHeader(
       "Content-Disposition",
@@ -152,7 +164,7 @@ app.get("/api/download", (req, res) => {
     if (done) return;
     done = true;
     if (!headersSent && !res.headersSent) {
-      res.status(500).send("Could not start the downloader.");
+      sendErrorPage(res, 500, "Could not start the downloader. Please try again.");
     }
   });
 
@@ -160,7 +172,9 @@ app.get("/api/download", (req, res) => {
     if (done) return;
     done = true;
     if (!headersSent && !res.headersSent) {
-      res.status(422).send(cleanError(stderr) || "Could not download that video.");
+      // No bytes ever streamed → the browser is still on our page, so we can
+      // navigate it to a friendly branded error instead of dumping raw text.
+      sendErrorPage(res, 422, cleanError(stderr) || "We couldn't find a video at that link.");
     } else {
       res.end(); // finished (or partial) stream — close it cleanly
     }
@@ -168,6 +182,37 @@ app.get("/api/download", (req, res) => {
 
   req.on("close", () => { done = true; kill(); }); // client bailed — stop working
 });
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+  );
+}
+
+// A small, on-brand error page. Because the download uses a normal navigation,
+// a failure lands the user here (styled) rather than on a wall of raw text.
+function sendErrorPage(res, code, message) {
+  res
+    .status(code)
+    .type("html")
+    .send(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Download didn't work — X Video Downloader</title>
+<link rel="stylesheet" href="/styles.css" /></head>
+<body>
+  <div class="wrap">
+    <header><h1>That didn't work</h1><p>${escapeHtml(message)}</p></header>
+    <div class="card">
+      <p style="margin:0 0 16px;color:var(--muted)">
+        This usually means the link didn't contain a downloadable video. Make sure
+        you copied the full post link — it should contain <em>/status/</em>.
+      </p>
+      <a class="dl" href="/"><button type="button">← Back to the downloader</button></a>
+    </div>
+  </div>
+</body></html>`);
+}
 
 // yt-dlp errors are noisy; surface a single readable line.
 function cleanError(raw) {
