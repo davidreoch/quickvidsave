@@ -92,6 +92,20 @@ button {
 button:hover:not(:disabled) { background: var(--accent-hover); }
 button:disabled { opacity: 0.55; cursor: default; }
 
+/* One-tap paste button (added by app.js when the clipboard API is available) */
+.paste-btn {
+  margin-top: 10px;
+  width: 100%;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--line);
+  font-weight: 500;
+}
+.paste-btn:hover:not(:disabled) {
+  background: rgba(29, 155, 240, 0.08);
+  border-color: var(--accent);
+}
+
 .status { margin-top: 16px; min-height: 22px; font-size: 0.95rem; }
 .status.error { color: var(--danger); }
 .status.muted { color: var(--muted); }

@@ -1,0 +1,116 @@
+- generic [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link "X Video Downloader" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img [ref=e5]
+        - text: X Video Downloader
+      - generic [ref=e7]:
+        - link "iPhone" [ref=e8] [cursor=pointer]:
+          - /url: /download-twitter-video-iphone
+        - link "Android" [ref=e9] [cursor=pointer]:
+          - /url: /download-twitter-video-android
+        - link "GIF" [ref=e10] [cursor=pointer]:
+          - /url: /twitter-gif-downloader
+        - link "PC" [ref=e11] [cursor=pointer]:
+          - /url: /twitter-video-downloader-pc
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - img [ref=e15]
+      - heading "X Video Downloader" [level=1] [ref=e17]
+      - paragraph [ref=e18]: Paste a post link, get the video. Free & no signup.
+    - generic [ref=e19]: Ad
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - textbox "X (Twitter) post link" [active] [ref=e22]:
+          - /placeholder: https://x.com/user/status/123...
+        - button "Download" [ref=e23] [cursor=pointer]
+      - button "Paste a link from your clipboard and download" [ref=e24] [cursor=pointer]: 📋 Paste link
+      - status [ref=e25]
+      - generic [ref=e26]:
+        - strong [ref=e27]: How it works
+        - list [ref=e28]:
+          - listitem [ref=e29]: Open a post on X that has a video.
+          - listitem [ref=e30]:
+            - text: Tap
+            - emphasis [ref=e31]: Share → Copy link
+            - text: and paste it above.
+          - listitem [ref=e32]: Press Download and save the MP4.
+    - region "Frequently asked questions" [ref=e33]:
+      - heading "Frequently asked questions" [level=2] [ref=e34]
+      - group [ref=e35]:
+        - generic "How do I download a video from X (Twitter)? +" [ref=e36] [cursor=pointer]
+      - group [ref=e37]:
+        - generic "Is it free? +" [ref=e38] [cursor=pointer]
+      - group [ref=e39]:
+        - generic "Does it work on iPhone and Android? +" [ref=e40] [cursor=pointer]
+      - group [ref=e41]:
+        - generic "Where do the downloaded videos go? +" [ref=e42] [cursor=pointer]
+      - group [ref=e43]:
+        - generic "What quality will the video be? +" [ref=e44] [cursor=pointer]
+      - group [ref=e45]:
+        - generic "Can I download private or age-restricted videos? +" [ref=e46] [cursor=pointer]
+    - generic [ref=e47]:
+      - heading "More guides" [level=2] [ref=e48]
+      - generic [ref=e49]:
+        - link "Download on iPhone Save X videos to your camera roll in Safari." [ref=e50] [cursor=pointer]:
+          - /url: /download-twitter-video-iphone
+          - strong [ref=e51]: Download on iPhone
+          - text: Save X videos to your camera roll in Safari.
+        - link "Download on Android Save X videos straight to your Downloads." [ref=e52] [cursor=pointer]:
+          - /url: /download-twitter-video-android
+          - strong [ref=e53]: Download on Android
+          - text: Save X videos straight to your Downloads.
+        - link "Twitter GIF downloader Grab X \"GIFs\" as MP4 (and convert if needed)." [ref=e54] [cursor=pointer]:
+          - /url: /twitter-gif-downloader
+          - strong [ref=e55]: Twitter GIF downloader
+          - text: Grab X "GIFs" as MP4 (and convert if needed).
+        - link "Download on PC Save X videos on Windows or Mac." [ref=e56] [cursor=pointer]:
+          - /url: /twitter-video-downloader-pc
+          - strong [ref=e57]: Download on PC
+          - text: Save X videos on Windows or Mac.
+        - link "Download in HD Get the highest quality available." [ref=e58] [cursor=pointer]:
+          - /url: /download-twitter-video-hd
+          - strong [ref=e59]: Download in HD
+          - text: Get the highest quality available.
+        - link "Is it legal? Copyright and fair use, explained." [ref=e60] [cursor=pointer]:
+          - /url: /is-it-legal-to-download-twitter-videos
+          - strong [ref=e61]: Is it legal?
+          - text: Copyright and fair use, explained.
+        - link "Twitter to MP4 Save X videos as a ready-to-play MP4." [ref=e62] [cursor=pointer]:
+          - /url: /twitter-to-mp4
+          - strong [ref=e63]: Twitter to MP4
+          - text: Save X videos as a ready-to-play MP4.
+        - link "How to download Simple step-by-step guide for any device." [ref=e64] [cursor=pointer]:
+          - /url: /how-to-download-twitter-videos
+          - strong [ref=e65]: How to download
+          - text: Simple step-by-step guide for any device.
+        - link "Online downloader No app, no software — runs in your browser." [ref=e66] [cursor=pointer]:
+          - /url: /twitter-video-downloader-online
+          - strong [ref=e67]: Online downloader
+          - text: No app, no software — runs in your browser.
+    - generic [ref=e68]: Ad
+  - contentinfo [ref=e69]:
+    - generic [ref=e70]:
+      - link "Home" [ref=e71] [cursor=pointer]:
+        - /url: /
+      - link "iPhone" [ref=e72] [cursor=pointer]:
+        - /url: /download-twitter-video-iphone
+      - link "Android" [ref=e73] [cursor=pointer]:
+        - /url: /download-twitter-video-android
+      - link "GIF" [ref=e74] [cursor=pointer]:
+        - /url: /twitter-gif-downloader
+      - link "PC" [ref=e75] [cursor=pointer]:
+        - /url: /twitter-video-downloader-pc
+      - link "HD" [ref=e76] [cursor=pointer]:
+        - /url: /download-twitter-video-hd
+      - link "Legal" [ref=e77] [cursor=pointer]:
+        - /url: /is-it-legal-to-download-twitter-videos
+      - link "MP4" [ref=e78] [cursor=pointer]:
+        - /url: /twitter-to-mp4
+      - link "How-to" [ref=e79] [cursor=pointer]:
+        - /url: /how-to-download-twitter-videos
+      - link "Online" [ref=e80] [cursor=pointer]:
+        - /url: /twitter-video-downloader-online
+    - generic [ref=e81]: X Video Downloader
+    - generic [ref=e82]: Only download videos you own or have permission to use. This tool is for personal, fair-use, and archival purposes. X and the X logo are trademarks of their respective owner; this site is not affiliated with X.
