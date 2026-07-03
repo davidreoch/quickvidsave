@@ -1,0 +1,37 @@
+name: keep-alive
+
+# Pings the live site so Render's free tier doesn't spin the server down after
+# 15 minutes of inactivity (which would make the next visitor wait ~30-60s for a
+# cold start). The repo is public, so Actions minutes are free/unlimited.
+#
+# GitHub's scheduled runs can be delayed under load, so each run pings twice
+# (about 5 minutes apart) to widen coverage between scheduled runs.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # every 10 minutes
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+# If a run is still going when the next fires, let the newer one proceed.
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Ping the site
+        run: |
+          ping_once () {
+            echo "Ping at $(date -u)"
+            if curl -fsS --retry 3 --retry-delay 5 --max-time 60 -o /dev/null "https://quickvidsave.com/"; then
+              echo "  ok"
+            else
+              echo "  ping failed (next run will retry)"
+            fi
+          }
+          ping_once
+          sleep 300
+          ping_once
