@@ -1,16 +1,19 @@
 name: keep-alive
 
-# Pings the live site so Render's free tier doesn't spin the server down after
-# 15 minutes of inactivity (which would make the next visitor wait ~30-60s for a
-# cold start). The repo is public, so Actions minutes are free/unlimited.
+# DISABLED. Do not re-enable on Render's free tier.
 #
-# GitHub's scheduled runs can be delayed under load, so each run pings twice
-# (about 5 minutes apart) to widen coverage between scheduled runs.
+# This used to ping the site every 10 minutes so Render wouldn't spin the server
+# down after 15 minutes idle. It worked -- and that was the problem. Render's
+# free tier allows 750 instance-hours per WORKSPACE per calendar month, and a
+# service that never sleeps burns ~720 of them by itself. Running this alongside
+# a second free service blew the account past the cap, and Render suspends ALL
+# free web services for the rest of the month when that happens.
+#
+# Cold starts (~30-60s for the first visitor) are the price of the free tier.
+# Being suspended is worse than being slow.
 
 on:
-  schedule:
-    - cron: "*/10 * * * *" # every 10 minutes
-  workflow_dispatch: {} # allow manual runs from the Actions tab
+  workflow_dispatch: {} # manual only -- the schedule is intentionally gone
 
 # If a run is still going when the next fires, let the newer one proceed.
 concurrency:
