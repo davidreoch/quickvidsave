@@ -2,12 +2,24 @@
 // if the widget markup is present. All enhancements below are added in JS so
 // every page (home + landing pages) gets them without editing each file.
 //
-// One-click flow: the form submit triggers the download directly (a single
-// server-side extraction, no separate "look up" step and no second button).
-// The browser saves the file via Content-Disposition — which is also the most
-// reliable way to actually save on iOS Safari. We show honest progress and,
-// the moment bytes start flowing, a clean "download started" confirmation
-// (the server sets a short-lived cookie we poll for).
+// How the download works, and why:
+//
+// The server no longer streams the video to us. It used to, and we paid egress
+// on every byte — which blew the host's bandwidth quota and got the site
+// suspended. Now the server only *resolves* the post to X's direct CDN URL
+// (a few hundred bytes), and the browser fetches the media straight from X.
+// The bytes never touch our server, so bandwidth stays flat however popular a
+// video gets.
+//
+// Two things make that work:
+//   1. X's CDN 403s any request carrying a foreign Referer → fetch with
+//      referrerPolicy: "no-referrer".
+//   2. It reflects our origin back in Access-Control-Allow-Origin, so we can
+//      read the bytes and hand them to the user as a real file download with a
+//      proper filename — keeping the one-click save.
+//
+// If the direct fetch ever fails (an old browser, a CORS change at X's end), we
+// fall back to opening the video so the user can still save it manually.
 (function () {
   const form = document.getElementById("form");
   if (!form) return;
@@ -31,8 +43,13 @@
     status.innerHTML = msg;
   }
 
+  function busy(on) {
+    submit.disabled = on;
+    submit.textContent = on ? "Working…" : submitLabel;
+  }
+
   // Mirror the server's accepted hosts so we can reject an obviously-wrong link
-  // instantly, instead of making the user wait ~12s for a server-side error.
+  // instantly, instead of making the user wait for a server-side error.
   function checkXUrl(raw) {
     let u;
     try {
@@ -47,68 +64,83 @@
     return "ok";
   }
 
-  let pollTimer = null;
-  let waitTimer = null;
-  function stopTimers() {
-    if (pollTimer) clearInterval(pollTimer);
-    if (waitTimer) clearTimeout(waitTimer);
-    pollTimer = waitTimer = null;
-  }
-
-  function startDownload(url) {
-    stopTimers();
-
-    // Unique token so we can recognise *our* download starting.
-    const token = "t" + Date.now() + Math.floor(Math.random() * 1e6);
-    document.cookie = "dlstart=; Path=/; Max-Age=0"; // clear any stale value
-
-    // Kick off the download inside this user gesture. No `download` attribute:
-    // that lets the server decide (attachment → saves & we stay here; an error
-    // response → the browser shows our friendly error page instead).
+  // Save a blob to the user's device with a real filename.
+  function saveBlob(blob, filename) {
+    const objUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = "/api/download?t=" + token + "&url=" + encodeURIComponent(url);
+    a.href = objUrl;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
+    // Give the browser a moment to start the save before releasing the blob.
+    setTimeout(() => URL.revokeObjectURL(objUrl), 60000);
+  }
 
-    submit.disabled = true;
-    submit.textContent = "Fetching…";
-    setStatus(
-      '<span class="spinner"></span>Fetching your video from X… this usually takes 10–20 seconds.',
-      "muted"
-    );
+  // Pull the video from X's CDN, reporting progress as it goes.
+  async function fetchVideo(cdnUrl) {
+    const res = await fetch(cdnUrl, { referrerPolicy: "no-referrer" });
+    if (!res.ok) throw new Error("cdn " + res.status);
 
-    // Keep it from feeling broken on slower/HD videos.
-    waitTimer = setTimeout(() => {
+    const total = Number(res.headers.get("content-length")) || 0;
+    // Without a readable stream we can't show progress — just take the blob.
+    if (!res.body || !res.body.getReader) return res.blob();
+
+    const reader = res.body.getReader();
+    const chunks = [];
+    let received = 0;
+
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      if (total) {
+        const pct = Math.min(99, Math.round((received / total) * 100));
+        setStatus('<span class="spinner"></span>Saving your video… ' + pct + "%", "muted");
+      } else {
+        const mb = (received / 1048576).toFixed(1);
+        setStatus('<span class="spinner"></span>Saving your video… ' + mb + " MB", "muted");
+      }
+    }
+    return new Blob(chunks, { type: "video/mp4" });
+  }
+
+  async function startDownload(url) {
+    busy(true);
+    setStatus('<span class="spinner"></span>Finding your video…', "muted");
+
+    // 1. Ask our server for the direct CDN URL (cheap — no media passes through).
+    let info;
+    try {
+      const res = await fetch("/api/resolve?url=" + encodeURIComponent(url));
+      info = await res.json();
+      if (!res.ok) throw new Error(info && info.error);
+    } catch (e) {
+      busy(false);
       setStatus(
-        '<span class="spinner"></span>Still working — longer or HD videos take a little more time.',
-        "muted"
+        (e && e.message) || "We couldn't find a video at that link. Try another.",
+        "error"
       );
-    }, 18000);
-
-    function reset() {
-      submit.disabled = false;
-      submit.textContent = submitLabel;
+      return;
     }
 
-    // Watch for the "download started" signal from the server.
-    let waited = 0;
-    pollTimer = setInterval(() => {
-      waited += 500;
-      if (document.cookie.indexOf("dlstart=" + token) !== -1) {
-        stopTimers();
-        reset();
-        setStatus("✓ Your download has started — check your downloads.", "muted");
-        document.cookie = "dlstart=; Path=/; Max-Age=0";
-      } else if (waited > 90000) {
-        stopTimers();
-        reset();
-        setStatus(
-          "Taking longer than expected. If nothing downloaded, the link may not contain a video — try another.",
-          "muted"
-        );
-      }
-    }, 500);
+    // 2. Fetch the media straight from X and save it with a proper filename.
+    try {
+      const blob = await fetchVideo(info.url);
+      saveBlob(blob, info.filename || "x-video.mp4");
+      busy(false);
+      setStatus("✓ Saved — check your downloads.", "muted");
+    } catch {
+      // Direct fetch failed. The video is still perfectly reachable, so open it
+      // rather than dead-ending: the user can long-press / right-click to save.
+      busy(false);
+      window.open(info.url, "_blank", "noopener");
+      setStatus(
+        "Your video opened in a new tab — press and hold it, then choose <em>Save video</em>.",
+        "muted"
+      );
+    }
   }
 
   // Validate, then download. Instant, helpful errors for bad input.
